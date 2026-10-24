@@ -1,0 +1,87 @@
+[project]
+name = "lazula-ai"
+version = "0.1.0"
+description = "LAZULA.ai: the shared AI hub and Studio engine for LAZULA apps"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "fastapi>=0.162,<1",
+    "uvicorn[standard]>=0.54,<1",
+    "gunicorn>=26,<27",
+    "pydantic>=2.14,<3",
+    "pydantic-settings>=2.16,<3",
+    "sqlalchemy[asyncio]>=2.1,<2.2",
+    "asyncmy>=0.2.17,<0.3",
+    "alembic>=1.20,<2",
+    "redis>=8.1,<9",
+    "celery>=5.6,<6",
+    "httpx>=0.28,<1",
+    "tenacity>=9,<10",
+    "anthropic>=2.3,<3",
+    "cryptography>=50,<51",
+    "structlog>=26,<27",
+    "jinja2>=3.1.6,<4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1,<10",
+    "pytest-asyncio>=1.4,<2",
+    "pytest-cov>=7.1,<8",
+    "respx>=0.23,<1",
+    "aiosqlite>=0.22,<1",
+    "fakeredis>=2.40,<3",
+    "ruff>=0.17,<1",
+    "mypy>=2.4,<3",
+    "bandit>=1.9,<2",
+    "pip-audit>=2.10,<3",
+    "pre-commit>=4.7,<5",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "ASYNC", "RUF"]
+ignore = ["S101"]  # assert is fine in tests
+
+[tool.ruff.lint.isort]
+known-third-party = ["alembic"]  # the local alembic/ folder is migrations, not the package
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S404", "S603"]  # fake secrets; running local php in tests
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["app"]
+
+[[tool.mypy.overrides]]
+module = ["celery.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+markers = [
+    "integration: needs real MySQL and Redis",
+    "studio: needs Chromium",
+    "load: load tests (staging only)",
+    "security: security and tenancy tests",
+]
+filterwarnings = ["error::DeprecationWarning:app.*"]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+concurrency = ["greenlet", "thread"]  # SQLAlchemy async runs code in greenlets
+
+[tool.bandit]
+exclude_dirs = ["tests", "alembic"]

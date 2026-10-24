@@ -1,0 +1,4 @@
+# Store text files with LF so Docker images and CI on Linux behave the same as local checkouts.
+* text=auto eol=lf
+*.png binary
+*.pdf binary

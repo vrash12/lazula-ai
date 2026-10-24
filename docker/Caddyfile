@@ -1,0 +1,27 @@
+# Replace REPLACE-WITH-COMPANY-DOMAIN before use (INFRASTRUCTURE.md §5).
+{
+  email ops@REPLACE-WITH-COMPANY-DOMAIN
+}
+
+ai.REPLACE-WITH-COMPANY-DOMAIN {
+  encode zstd gzip
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "no-referrer"
+    -Server
+  }
+
+  request_body {
+    max_size 30MB
+  }
+
+  reverse_proxy api1:8000 api2:8000 {
+    lb_policy round_robin
+    health_uri /health
+    health_interval 10s
+    fail_duration 30s
+  }
+}

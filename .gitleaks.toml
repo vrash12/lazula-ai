@@ -1,0 +1,15 @@
+# Gitleaks configuration: the default rules, plus an allowlist for the fake keys that
+# exist on purpose. Each entry is an exact value, so a real key is still reported.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake master keys used only for local development, tests and documentation examples"
+regexes = [
+  # .env.example: base64 of "dev-only-fake-master-key-32bytes"
+  '''ZGV2LW9ubHktZmFrZS1tYXN0ZXIta2V5LTMyYnl0ZXM=''',
+  # tests/conftest.py: base64 of "test-only-fake-master-key-32byte"
+  '''dGVzdC1vbmx5LWZha2UtbWFzdGVyLWtleS0zMmJ5dGU=''',
+  # Earlier documentation example (CI_CD.md), still present in history
+  '''dGVzdC1vbmx5LW1hc3Rlci1rZXktbm90LXJlYWwtMzJieXRlcw==''',
+]

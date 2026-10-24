@@ -1,0 +1,23 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff lint
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: uv run mypy app
+        language: system
+        pass_filenames: false
+        types: [python]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0  # check for the latest release when installing
+    hooks:
+      - id: gitleaks
