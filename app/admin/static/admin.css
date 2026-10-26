@@ -326,6 +326,8 @@ img { display: block; max-width: 100%; height: auto; }
   }
 
   .ai-highlights {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
@@ -433,7 +435,7 @@ img { display: block; max-width: 100%; height: auto; }
   --stroke: 3px;
 }
 
-.ai-scene :is(.wall, .roof, .tower-body, .hill-back, .hill-front, .cloud-body, .clapper,
+.ai-scene :is(.wall, .roof, .tower-body, .cloud-body, .clapper, .trunk, .canopy,
   .tower-disc, .window, .door) {
   stroke: var(--ink);
   stroke-width: var(--stroke);
@@ -486,6 +488,9 @@ img { display: block; max-width: 100%; height: auto; }
 
 .hill-back { fill: light-dark(#A6DCA0, #245E48); }
 .hill-front { fill: light-dark(#73C483, #1A4A39); }
+.hill-line { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; }
+.trunk { fill: light-dark(#B07A4A, #7A5233); }
+.canopy { fill: light-dark(#5DBB73, #2F7A4C); }
 .tufts path {
   fill: none;
   stroke: light-dark(#3E8F4F, #0E2C22);

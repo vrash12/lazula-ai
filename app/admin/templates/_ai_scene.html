@@ -68,8 +68,19 @@
   <path class="spark sp2" transform="translate(88 82)" d="M0-6 1.6-1.6 6 0 1.6 1.6 0 6-1.6 1.6-6 0-1.6-1.6Z"/>
   <path class="spark sp3" transform="translate(556 80)" d="M0-6 1.6-1.6 6 0 1.6 1.6 0 6-1.6 1.6-6 0-1.6-1.6Z"/>
 
-  <!-- Back hill -->
-  <path class="hill-back" d="M-4 372Q120 330 240 360 330 382 420 352 530 318 644 360V470H-4Z"/>
+  <!-- Back hill: drawn well past the frame so the ground runs to both edges of the panel -->
+  <path class="hill-back" d="M-700 360Q-360 300-4 372Q120 330 240 360 330 382 420 352 530 318 644 360Q960 404 1340 340V1200H-700Z"/>
+  <path class="hill-line" d="M-700 360Q-360 300-4 372Q120 330 240 360 330 382 420 352 530 318 644 360Q960 404 1340 340"/>
+
+  <!-- Trees and bushes on the wider land -->
+  <g class="trees">
+    <ellipse class="canopy" cx="-200" cy="336" rx="26" ry="16"/>
+    <rect class="trunk" x="-95" y="332" width="10" height="28" rx="3"/><circle class="canopy" cx="-90" cy="320" r="22"/>
+    <rect class="trunk" x="565" y="318" width="10" height="28" rx="3"/><circle class="canopy" cx="570" cy="306" r="20"/>
+    <ellipse class="canopy" cx="612" cy="336" rx="18" ry="11"/>
+    <rect class="trunk" x="715" y="344" width="10" height="28" rx="3"/><circle class="canopy" cx="720" cy="332" r="22"/>
+    <ellipse class="canopy" cx="840" cy="368" rx="26" ry="16"/>
+  </g>
 
   <!-- SermonPost: a little chapel -->
   <g class="building">
@@ -152,12 +163,15 @@
   </g>
 
   <!-- Front hill, grass tufts and app signs -->
-  <path class="hill-front" d="M-4 408Q160 372 320 400 480 428 644 392V470H-4Z"/>
+  <path class="hill-front" d="M-700 400Q-340 430-4 408Q160 372 320 400 480 428 644 392Q980 350 1340 410V1200H-700Z"/>
+  <path class="hill-line" d="M-700 400Q-340 430-4 408Q160 372 320 400 480 428 644 392Q980 350 1340 410"/>
   <g class="tufts">
     <path d="M24 440 28 432 31 440 35 430 38 440"/>
     <path d="M250 446 254 438 257 446 261 436 264 446"/>
     <path d="M388 446 392 438 395 446 399 436 402 446"/>
     <path d="M612 432 616 424 619 432 623 422 626 432"/>
+    <path d="M-160 430-156 422-153 430-149 420-146 430"/>
+    <path d="M760 398 764 390 767 398 771 388 774 398"/>
   </g>
   <g class="signs">
     <rect x="29" y="412" width="92" height="24" rx="8"/><text x="75" y="429">SermonPost</text>
