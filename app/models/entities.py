@@ -144,6 +144,28 @@ class UsageEntry(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
 
 
+class AdminUser(Timestamps, Base):
+    """A LAZULA staff member who signs in to the admin console (SECURITY.md §3.3, boundary B3).
+
+    Sign-in needs the password (Argon2id hash) and a two-factor code; a user without a
+    two-factor secret cannot sign in. Roles: owner, operator, designer, viewer.
+    """
+
+    __tablename__ = "admin_users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    totp_secret_enc: Mapped[str | None] = mapped_column(Text)
+    totp_last_step: Mapped[int | None] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20), default="active", nullable=False)
+    failed_sign_ins: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime)
+    last_sign_in_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
 class AuditEvent(Base):
     """Admin and key changes. Append-only."""
 
