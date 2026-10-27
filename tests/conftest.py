@@ -25,6 +25,8 @@ os.environ.update(
     MASTER_KEY="dGVzdC1vbmx5LWZha2UtbWFzdGVyLWtleS0zMmJ5dGU=",  # fake, test only
     ENABLE_FAKE_PROVIDER="true",
     LOG_LEVEL="INFO",
+    # Test-only admin allow-list (production default: dev@lazula.net, ryan@orrhomes.com).
+    ADMIN_ALLOWED_EMAILS="owner@lazula.example,viewer@lazula.example,nofactor@lazula.example",
     # Safety net for INV-12: if any test ever builds a real SDK client without a mock
     # transport, its requests go to a closed local port instead of a provider.
     ANTHROPIC_BASE_URL="http://127.0.0.1:9",

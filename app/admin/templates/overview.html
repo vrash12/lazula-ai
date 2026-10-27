@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block body_class %}page-console{% endblock %}
+{% block body %}
+<header class="top-bar">
+  <div class="top-bar-start">
+    <span class="logo-plate logo-small"><img src="/admin/static/lazula-logo.png" alt="LAZULA" width="122" height="32"></span>
+    <span class="product-name">Admin console</span>
+  </div>
+  <div class="top-bar-end">
+    {% include "_theme_toggle.html" %}
+    <span class="user-name">{{ user.name }}</span>
+    <span class="chip">{{ role_label }}</span>
+    <form method="post" action="/admin/logout">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="button button-secondary">Sign out</button>
+    </form>
+  </div>
+</header>
+
+<main id="main" class="console-main">
+  <h1>Welcome, {{ user.name.split(' ')[0] }}</h1>
+
+  <div class="banner banner-info" role="status">
+    You're signed in. The admin screens arrive in milestone M2; this list shows what your role will be able to open.
+  </div>
+
+  <section aria-labelledby="screens-title">
+    <h2 id="screens-title">Your screens</h2>
+    {% if screens %}
+    <ul class="screen-grid">
+      {% for screen in screens %}
+      <li class="screen-card">
+        <span class="screen-id">{{ screen.id }}</span>
+        <span class="screen-title">{{ screen.title }}</span>
+        <span class="chip chip-muted">Planned · {{ screen.milestone }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">Your role has no admin screens yet. Ask an owner if you need access.</p>
+    {% endif %}
+  </section>
+
+  <p class="hint session-note">For your security, you're signed out after {{ idle_minutes }} minutes without activity.</p>
+</main>
+{% endblock %}

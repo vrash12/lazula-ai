@@ -6,6 +6,8 @@
     uv run python -m app.cli retire-old-secret sermonpost
     uv run python -m app.cli add-provider-key anthropic      (reads the key from a hidden prompt)
     uv run python -m app.cli seed-models
+    uv run python -m app.cli create-admin dev@lazula.net --name "Your Name" --role owner
+    uv run python -m app.cli reset-admin-2fa dev@lazula.net
 
 Secrets are printed once and never logged. Every change writes an audit event.
 """
@@ -21,10 +23,14 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.admin.auth import TOTP_SECRET_PURPOSE, normalize_email
+from app.admin.roles import Role
 from app.api.deps import APP_SECRET_PURPOSE
+from app.core import totp
 from app.core.crypto import Vault, last4, new_app_secret
+from app.core.passwords import hash_password, password_problem
 from app.db import make_engine, make_sessionmaker
-from app.models import AIModel, App, AuditEvent, ProviderAccount
+from app.models import AdminUser, AIModel, App, AuditEvent, ProviderAccount
 from app.providers.registry import PROVIDER_KEY_PURPOSE
 from app.settings import get_settings
 from app.tasks import TASKS
@@ -166,12 +172,81 @@ async def seed_models_cmd(session: AsyncSession, _vault: Vault, _args: argparse.
     print(f"Seeded {len(SEED_MODELS)} models.")
 
 
+def _print_two_factor_setup(email: str, secret: str) -> None:
+    print("Two-factor setup (shown once). In an authenticator app, add an account with this key:")
+    print(f"  {secret}")
+    print("Or open this link on the phone, or turn it into a QR code:")
+    print(f"  {totp.provisioning_uri(secret, email)}")
+    print("Sign in at /admin/login with the email, the password and the app's 6-digit code.")
+
+
+async def _admin_by_email(session: AsyncSession, email: str) -> AdminUser:
+    user = await session.scalar(select(AdminUser).where(AdminUser.email == normalize_email(email)))
+    if user is None:
+        sys.exit(f"No admin with email {email!r}")
+    return user
+
+
+async def create_admin_cmd(session: AsyncSession, vault: Vault, args: argparse.Namespace) -> None:
+    email = normalize_email(args.email)
+    if "@" not in email or len(email) > 254:
+        sys.exit("That does not look like an email address")
+    if not get_settings().admin_email_allowed(email):
+        sys.exit(f"{email!r} is not on ADMIN_ALLOWED_EMAILS, so it could never sign in")
+    if await session.scalar(select(AdminUser).where(AdminUser.email == email)):
+        sys.exit(f"An admin with email {email!r} already exists")
+    password = getpass.getpass("Password (input hidden, at least 12 characters): ")
+    if problem := password_problem(password):
+        sys.exit(problem)
+    if getpass.getpass("Repeat the password: ") != password:
+        sys.exit("The passwords do not match")
+    user = AdminUser(
+        email=email, name=args.name, role=args.role, password_hash=hash_password(password)
+    )
+    session.add(user)
+    await session.flush()
+    secret = totp.new_secret()
+    user.totp_secret_enc = vault.encrypt(secret, TOTP_SECRET_PURPOSE.format(user_id=user.id))
+    session.add(
+        AuditEvent(
+            actor=_actor(),
+            action="admin_user.create",
+            target=f"admin:{user.id}",
+            details={"role": args.role},
+        )
+    )
+    await session.commit()
+    print(f"Admin {email} created with the {args.role} role.")
+    _print_two_factor_setup(email, secret)
+
+
+async def reset_admin_2fa_cmd(
+    session: AsyncSession, vault: Vault, args: argparse.Namespace
+) -> None:
+    user = await _admin_by_email(session, args.email)
+    secret = totp.new_secret()
+    user.totp_secret_enc = vault.encrypt(secret, TOTP_SECRET_PURPOSE.format(user_id=user.id))
+    user.totp_last_step = None
+    user.failed_sign_ins = 0
+    user.locked_until = None
+    session.add(
+        AuditEvent(
+            actor=_actor(), action="admin_user.reset_2fa", target=f"admin:{user.id}", details={}
+        )
+    )
+    await session.commit()
+    print(f"Two-factor reset for {user.email}. The old authenticator entry no longer works.")
+    _print_two_factor_setup(user.email, secret)
+
+
 COMMANDS = {
     "create-app": create_app_cmd,
     "rotate-app-secret": rotate_secret_cmd,
     "retire-old-secret": retire_secret_cmd,
     "add-provider-key": add_provider_key_cmd,
     "seed-models": seed_models_cmd,
+    "create-admin": create_admin_cmd,
+    "reset-admin-2fa": reset_admin_2fa_cmd,
 }
 
 
@@ -189,6 +264,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "provider", choices=["anthropic", "openai", "gemini", "xai"]
     )
     sub.add_parser("seed-models")
+    p = sub.add_parser("create-admin")
+    p.add_argument("email")
+    p.add_argument("--name", required=True)
+    p.add_argument("--role", required=True, choices=[role.value for role in Role])
+    sub.add_parser("reset-admin-2fa").add_argument("email")
     return parser.parse_args(argv)
 
 

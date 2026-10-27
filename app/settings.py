@@ -39,6 +39,25 @@ class Settings(BaseSettings):
     # chain so the hub works without real provider keys. Forbidden in production.
     enable_fake_provider: bool = False
 
+    # Admin console sign-in (SECURITY.md §4.1).
+    admin_session_idle_minutes: int = Field(default=30, ge=5, le=120)
+    admin_session_max_hours: int = Field(default=12, ge=1, le=24)
+    admin_max_failed_sign_ins: int = Field(default=5, ge=3, le=20)
+    admin_lockout_minutes: int = Field(default=15, ge=5, le=1440)
+    admin_sign_in_attempts_per_ip: int = Field(default=20, ge=5, le=200)  # per lockout window
+    # Only these emails may hold an admin account or sign in (comma-separated). Empty means
+    # nobody: the list fails closed (AD-038).
+    admin_allowed_emails: str = "dev@lazula.net,ryan@orrhomes.com"
+
+    def admin_email_allowed(self, email: str) -> bool:
+        allowed = {e.strip().lower() for e in self.admin_allowed_emails.split(",") if e.strip()}
+        return email.strip().lower() in allowed
+
+    @property
+    def admin_cookies_secure(self) -> bool:
+        """Secure (HTTPS-only) cookies everywhere except local development and tests."""
+        return self.lazula_env in ("staging", "production")
+
     @model_validator(mode="after")
     def _check(self) -> Settings:
         if (self.master_key is None) == (self.master_key_file is None):

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block body_class %}page-auth{% endblock %}
+{% block body %}
+<div class="auth-layout">
+  <aside class="ai-panel" aria-label="About LAZULA.ai">
+    <div class="ai-panel-top">
+      <span class="logo-plate"><img src="/admin/static/lazula-logo.png" alt="LAZULA" width="150" height="40"></span>
+      {% include "_theme_toggle.html" %}
+    </div>
+
+    <div class="ai-panel-copy">
+      <p class="eyebrow">LAZULA.ai · Admin console</p>
+      <p class="ai-headline">The control tower for <span class="marker">every AI call.</span></p>
+      <p class="ai-subline">Send every request to the right model, keep provider keys locked away and know what each task costs.</p>
+    </div>
+
+    <div class="ai-scene-frame">
+      {% include "_ai_scene.html" %}
+    </div>
+
+    <ul class="ai-highlights">
+      <li>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="icon">
+          <path d="M4 6h6l4 6-4 6H4M14 12h6M17 9l3 3-3 3"/>
+        </svg>
+        <span class="highlight-text">
+          <strong>Never stuck</strong>
+          <span>Another model steps in if one fails.</span>
+        </span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="icon">
+          <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
+        </svg>
+        <span class="highlight-text">
+          <strong>Every cent traced</strong>
+          <span>Cost by app, client and task.</span>
+        </span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="icon">
+          <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4"/>
+        </svg>
+        <span class="highlight-text">
+          <strong>Nothing hidden</strong>
+          <span>Every change is on the record.</span>
+        </span>
+      </li>
+    </ul>
+  </aside>
+
+  <main id="main" class="auth-main">
+    <div class="auth-form-wrap">
+      <div class="auth-form">
+        {% block form %}{% endblock %}
+      </div>
+    </div>
+    <footer class="auth-footer">
+      <span>© {{ year }} LAZULA · For LAZULA staff only</span>
+      <span class="footer-secure">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" class="icon">
+          <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4"/>
+        </svg>
+        Protected with two-step sign-in
+      </span>
+    </footer>
+  </main>
+</div>
+{% endblock %}

@@ -21,6 +21,9 @@ dependencies = [
     "cryptography>=50,<51",
     "structlog>=26,<27",
     "jinja2>=3.1.6,<4",
+    "argon2-cffi>=25.1,<26",
+    "pyotp>=2.10,<3",
+    "python-multipart>=0.0.32,<0.1",
 ]
 
 [dependency-groups]

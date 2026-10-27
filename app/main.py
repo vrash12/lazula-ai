@@ -12,10 +12,13 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
 from app import __version__
+from app.admin import routes as admin_routes
+from app.admin.security import AdminSecurityHeadersMiddleware
 from app.api import health
 from app.api.v1 import tasks, tenants
 from app.core.crypto import Vault
@@ -111,6 +114,7 @@ def create_app(settings: Settings | None = None, *, manage_state: bool = True) -
         redoc_url=None,
         openapi_url="/openapi.json" if docs else None,
     )
+    app.add_middleware(AdminSecurityHeadersMiddleware, settings=settings)
     app.add_middleware(RequestLogMiddleware)
 
     @app.exception_handler(LazulaError)
@@ -136,6 +140,8 @@ def create_app(settings: Settings | None = None, *, manage_state: bool = True) -
     app.include_router(health.router)
     app.include_router(tasks.router)
     app.include_router(tenants.router)
+    app.include_router(admin_routes.router)
+    app.mount("/admin/static", StaticFiles(directory=admin_routes.STATIC_DIR), name="admin_static")
     return app
 
 

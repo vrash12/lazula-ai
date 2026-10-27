@@ -1,7 +1,8 @@
-"""Database models (ARCHITECTURE.md §8). M1 tables only; budgets, feature switches,
+"""Database models (ARCHITECTURE.md §8). M1 tables plus admin users; budgets, feature switches,
 feedback and Studio tables arrive with their milestones."""
 
 from app.models.entities import (
+    AdminUser,
     AIModel,
     App,
     AuditEvent,
@@ -15,6 +16,7 @@ from app.models.entities import (
 
 __all__ = [
     "AIModel",
+    "AdminUser",
     "App",
     "AuditEvent",
     "Base",

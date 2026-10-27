@@ -1,0 +1,60 @@
+{% extends "_auth_layout.html" %}
+{% block title %}Sign in{% endblock %}
+{% block form %}
+<div class="steps" aria-label="Step 1 of 2">
+  <span class="step-bar is-active"></span>
+  <span class="step-bar"></span>
+  <span class="steps-label">Step 1 of 2</span>
+</div>
+
+<div class="form-heading">
+  <h1>Welcome back <span class="wave" aria-hidden="true">👋</span></h1>
+  <p class="lead">Sign in with your email and password. Next, you'll confirm it's you with your authenticator app.</p>
+</div>
+
+{% if error %}
+<div class="banner banner-danger" role="alert" id="form-error">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+  <span>{{ error }}</span>
+</div>
+{% elif notice %}
+<div class="banner banner-info" role="status">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+  <span>{{ notice }}</span>
+</div>
+{% endif %}
+
+<form method="post" action="/admin/login" class="form" novalidate{% if error %} aria-describedby="form-error"{% endif %}>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <div class="field">
+    <label for="email">Work email</label>
+    <div class="input-wrap">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon input-icon"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>
+      <input id="email" name="email" type="email" autocomplete="username" required
+             maxlength="254" placeholder="name@lazula.com" value="{{ email }}" {% if not email %}autofocus{% endif %}>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="input-wrap">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon input-icon"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+      <input id="password" name="password" type="password" autocomplete="current-password"
+             required maxlength="256" placeholder="Your password" {% if email %}autofocus{% endif %}>
+    </div>
+  </div>
+
+  <button type="submit" class="button button-primary button-block">
+    Continue
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </button>
+
+  <p class="note-box">
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="icon"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>
+    New to the console? An owner can set up your account.
+  </p>
+</form>
+
+<p class="help">For your security, sign-in pauses for {{ lockout_minutes }} minutes after several wrong tries.</p>
+{% endblock %}
