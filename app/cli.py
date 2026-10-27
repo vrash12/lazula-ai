@@ -6,8 +6,8 @@
     uv run python -m app.cli retire-old-secret sermonpost
     uv run python -m app.cli add-provider-key anthropic      (reads the key from a hidden prompt)
     uv run python -m app.cli seed-models
-    uv run python -m app.cli create-admin you@example.com --name "Your Name" --role owner
-    uv run python -m app.cli reset-admin-2fa you@example.com
+    uv run python -m app.cli create-admin dev@lazula.net --name "Your Name" --role owner
+    uv run python -m app.cli reset-admin-2fa dev@lazula.net
 
 Secrets are printed once and never logged. Every change writes an audit event.
 """
@@ -191,6 +191,8 @@ async def create_admin_cmd(session: AsyncSession, vault: Vault, args: argparse.N
     email = normalize_email(args.email)
     if "@" not in email or len(email) > 254:
         sys.exit("That does not look like an email address")
+    if not get_settings().admin_email_allowed(email):
+        sys.exit(f"{email!r} is not on ADMIN_ALLOWED_EMAILS, so it could never sign in")
     if await session.scalar(select(AdminUser).where(AdminUser.email == email)):
         sys.exit(f"An admin with email {email!r} already exists")
     password = getpass.getpass("Password (input hidden, at least 12 characters): ")

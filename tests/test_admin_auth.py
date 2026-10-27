@@ -3,6 +3,7 @@ sessions, lockout, CSRF, roles, the Day/Night switch and log hygiene."""
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import time
@@ -15,10 +16,12 @@ import pytest
 from sqlalchemy import select
 
 from app.admin.auth import TOTP_SECRET_PURPOSE, email_hint
+from app.cli import create_admin_cmd
 from app.core import totp
 from app.core.ids import utcnow
 from app.core.passwords import hash_password
 from app.models import AdminUser, AuditEvent
+from app.settings import Settings
 from tests.conftest import Hub
 
 PASSWORD = "correct horse battery staple"
@@ -290,6 +293,50 @@ async def test_pending_store_never_holds_the_cookie_value(hub: Hub) -> None:
     [key] = await hub.asgi.state.redis.keys("admin_pending:*")
     assert token not in key
     assert token not in await hub.asgi.state.redis.get(key)
+
+
+# ---- Who may sign in (AD-038) ----
+
+
+def test_only_the_two_lazula_admins_are_allowed_by_default() -> None:
+    default = Settings.model_fields["admin_allowed_emails"].default
+    assert default == "dev@lazula.net,ryan@orrhomes.com"
+    settings = Settings(admin_allowed_emails=default)  # type: ignore[call-arg]
+    assert settings.admin_email_allowed("dev@lazula.net")
+    assert settings.admin_email_allowed("  Ryan@OrrHomes.com ")
+    assert not settings.admin_email_allowed("someone@lazula.net")
+    assert not Settings(admin_allowed_emails="").admin_email_allowed("dev@lazula.net")  # type: ignore[call-arg]
+
+
+async def test_an_account_off_the_allow_list_cannot_sign_in(hub: Hub) -> None:
+    await make_admin(hub, email="outsider@lazula.example")
+    response = await password_step(hub, email="outsider@lazula.example")
+    assert response.status_code == 401
+    assert SIGN_IN_FAILED in response.text  # same message as any other failure
+    assert not await hub.asgi.state.redis.keys("admin_pending:*")
+
+
+async def test_removing_an_email_from_the_list_ends_its_session(hub: Hub) -> None:
+    admin = await make_admin(hub)
+    await sign_in(hub, code=code_for(admin))
+    assert (await hub.client.get("/admin")).status_code == 200
+    hub.asgi.state.settings.admin_allowed_emails = "viewer@lazula.example"
+    assert (await hub.client.get("/admin")).status_code == 303
+    assert not await hub.asgi.state.redis.keys("admin_session:*")
+
+
+async def test_an_empty_list_lets_nobody_in(hub: Hub) -> None:
+    admin = await make_admin(hub)
+    hub.asgi.state.settings.admin_allowed_emails = ""
+    assert (await sign_in(hub, code=code_for(admin))).status_code == 401
+
+
+async def test_create_admin_refuses_emails_off_the_list(hub: Hub) -> None:
+    args = argparse.Namespace(email="stranger@example.com", name="Stranger", role="owner")
+    async with hub.asgi.state.sessionmaker() as session:
+        with pytest.raises(SystemExit) as stopped:
+            await create_admin_cmd(session, hub.asgi.state.vault, args)
+    assert "not on ADMIN_ALLOWED_EMAILS" in str(stopped.value)
 
 
 # ---- Lockout and limits ----

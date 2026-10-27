@@ -102,6 +102,9 @@ async def check_password(
 
     Passing this step signs nobody in; it only opens the code step (step 2).
     """
+    if not settings.admin_email_allowed(email):
+        spend_verify_time(password)
+        raise SignInFailed("not_on_allow_list")
     user = await db.scalar(select(AdminUser).where(AdminUser.email == normalize_email(email)))
     if user is None:
         spend_verify_time(password)
@@ -130,6 +133,8 @@ async def check_code(
     user = await db.get(AdminUser, user_id)
     if user is None:
         raise SignInFailed("unknown_user")
+    if not settings.admin_email_allowed(user.email):
+        raise SignInFailed("not_on_allow_list")
     _check_can_sign_in(user, clock)
     secret_enc = user.totp_secret_enc
     if secret_enc is None:  # also checked above; repeated so the type is narrowed

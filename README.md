@@ -11,7 +11,7 @@ Python 3.12, FastAPI, MySQL 8, Redis, Celery and Playwright. The existing PHP ap
 
 ## Status
 
-**M1 (hub foundation) is in progress.** Built and tested locally: signed task API, tenants and house styles, key vault, Claude adapter, fallback engine, cost ledger, idempotency, two tasks (`sermon.captions`, `post.platform_versions`), operator CLI, Docker and CI files, and the PHP connector. Also built early (AD-035): the admin console sign-in for LAZULA staff (two steps: password, then authenticator code; roles, sessions, lockout, audit; Day/Night). 89 tests pass. Not yet done: async tasks and webhooks, a second provider adapter, MySQL integration tests, a Docker build and a staging deploy.
+**M1 (hub foundation) is in progress.** Built and tested locally: signed task API, tenants and house styles, key vault, Claude adapter, fallback engine, cost ledger, idempotency, two tasks (`sermon.captions`, `post.platform_versions`), operator CLI, Docker and CI files, and the PHP connector. Also built early (AD-035): the admin console sign-in for LAZULA staff (two steps: password, then authenticator code; roles, sessions, lockout, audit; Day/Night). 94 tests pass. Not yet done: async tasks and webhooks, a second provider adapter, MySQL integration tests, a Docker build and a staging deploy.
 
 ## Quick start
 
@@ -55,10 +55,10 @@ uv run uvicorn --factory app.main:app_factory --reload
 
 API docs: `http://127.0.0.1:8000/docs`. Every request must be signed with HMAC-SHA256; `connectors/php/LazulaAiClient.php` shows how.
 
-To use the admin console, create your staff account. The command asks for a password and prints a two-factor setup key once; add it to an authenticator app:
+Only `dev@lazula.net` and `ryan@orrhomes.com` can use the admin console (`ADMIN_ALLOWED_EMAILS`, AD-038). To use it, create the staff account for one of them. The command asks for a password and prints a two-factor setup key once; add it to an authenticator app:
 
 ```bash
-uv run python -m app.cli create-admin you@example.com --name "Your Name" --role owner
+uv run python -m app.cli create-admin dev@lazula.net --name "Your Name" --role owner
 ```
 
 Then sign in at `http://127.0.0.1:8000/admin/login`.

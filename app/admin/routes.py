@@ -108,7 +108,8 @@ async def _signed_in(request: Request, db: SessionDep) -> tuple[AdminUser, Admin
     if session is None:
         return None
     user = await db.get(AdminUser, session.user_id)
-    if user is None or user.status != "active":
+    # Removing someone from the allow-list ends their open sessions on their next request.
+    if user is None or user.status != "active" or not settings.admin_email_allowed(user.email):
         await end_session(request.app.state.redis, token)
         return None
     return user, session

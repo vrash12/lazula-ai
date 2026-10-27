@@ -45,6 +45,13 @@ class Settings(BaseSettings):
     admin_max_failed_sign_ins: int = Field(default=5, ge=3, le=20)
     admin_lockout_minutes: int = Field(default=15, ge=5, le=1440)
     admin_sign_in_attempts_per_ip: int = Field(default=20, ge=5, le=200)  # per lockout window
+    # Only these emails may hold an admin account or sign in (comma-separated). Empty means
+    # nobody: the list fails closed (AD-038).
+    admin_allowed_emails: str = "dev@lazula.net,ryan@orrhomes.com"
+
+    def admin_email_allowed(self, email: str) -> bool:
+        allowed = {e.strip().lower() for e in self.admin_allowed_emails.split(",") if e.strip()}
+        return email.strip().lower() in allowed
 
     @property
     def admin_cookies_secure(self) -> bool:
